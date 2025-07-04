@@ -17,6 +17,7 @@ router.post("/register", async (req, res) => {
 
     res.json({ msg: "User registered successfully" });
   } catch (err) {
+    console.error("Registration error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -36,6 +37,7 @@ router.post("/login", async (req, res) => {
 
     res.json({ token, user: { name: user.name, email: user.email } });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ error: "Login failed" });
   }
 });
@@ -47,7 +49,9 @@ router.get("/dashboard", verifyToken, (req, res) => {
 
 // Middleware
 function verifyToken(req, res, next) {
-  const token = req.headers["authorization"]?.split(" ")[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
   if (!token) return res.status(403).json({ error: "Token missing" });
 
   try {
@@ -55,7 +59,7 @@ function verifyToken(req, res, next) {
     req.userId = decoded.id;
     next();
   } catch (err) {
-    res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 }
 
